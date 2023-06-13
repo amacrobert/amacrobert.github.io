@@ -1,0 +1,77 @@
+.section-header {
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.contact p {
+    margin-bottom: .25rem
+}
+
+.job-title {
+    font-size: 1.1rem;
+}
+.contact {
+    text-align: left;
+}
+.section-header {
+    color: darkred;
+}
+.additional-page-header {
+    display: none;
+}
+
+
+/*
+.core-skills h4, .core-skills h5 {
+    text-align: center;
+}
+
+.core-skills ul {
+    list-style: none;
+    text-align: center;
+    padding: 0;
+}
+*/
+@media screen {
+    body {
+        background-color: rgb(225, 225, 225);
+    }
+
+    .main-content {
+        margin: 24px auto;
+        min-height: calc(100vh - 48px);
+        background-color: rgb(245, 245, 245);
+        box-shadow: rgba(0, 0, 0, 10%) 0 0 30px;
+        padding: 60px;
+    }
+
+    .page-break {
+        display: none;
+    }
+
+}
+@media (min-width: 768px) {
+    .contact {
+        text-align: right;
+    }
+}
+
+@media print {
+    body {
+        font-size: .8rem;
+    }
+
+    .page-break {
+        page-break-after: always;
+    }
+
+    .contact {
+        text-align: right;
+    }
+
+    .additional-page-header {
+        display: flex;
+    }
+
+}
