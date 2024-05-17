@@ -1,0 +1,20 @@
+@media screen {
+    body {
+        background-color: #2b2b2b;
+        color: #bababa;
+    }
+
+    .main-content {
+        background-color: #323232;
+        box-shadow: rgba(0, 0, 0, 10%) 0 0 30px;
+    }
+
+    .section-header {
+        /*color: #efbe59;*/
+        color: #9dc450;
+    }
+
+    a {
+        color: #5a98be;
+    }
+}
