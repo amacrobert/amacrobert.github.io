@@ -20,7 +20,19 @@
 .additional-page-header {
     display: none;
 }
-
+ul.interests {
+    list-style: none;
+    padding-left: 0;
+}
+ul.interests li {
+    display: inline;
+}
+ul.interests li::after {
+    content: " • "; /* The dot separator */
+}
+ul.interests li:last-child::after {
+    content: "";
+}
 
 /*
 .core-skills h4, .core-skills h5 {
