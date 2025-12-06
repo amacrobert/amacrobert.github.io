@@ -34,6 +34,11 @@ ul.interests li:last-child::after {
     content: "";
 }
 
+.objective {
+    text-align: justify;
+    font-size: 1.1rem;
+}
+
 /*
 .core-skills h4, .core-skills h5 {
     text-align: center;
