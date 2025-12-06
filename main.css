@@ -28,7 +28,7 @@ ul.interests li {
     display: inline;
 }
 ul.interests li::after {
-    content: " • "; /* The dot separator */
+    content: " • ";
 }
 ul.interests li:last-child::after {
     content: "";
