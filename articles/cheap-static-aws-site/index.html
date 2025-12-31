@@ -25,6 +25,7 @@
     <link href="../../main.css" rel="stylesheet">
     <link href="../../dark-mode.css" rel="stylesheet">
     <link href="../article.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
 </head>
 <body>
     <button class="theme-toggle" type="button" aria-label="Switch to dark mode">
@@ -103,11 +104,11 @@
 
             <p>If you use Stenope, install it with:</p>
 
-            <pre><code>composer require stenope/stenope</code></pre>
+            <pre><code class="language-bash">composer require stenope/stenope</code></pre>
 
             <p>Then build the static site with:</p>
 
-            <pre><code>bin/console -e prod stenope:build ./static</code></pre>
+            <pre><code class="language-bash">bin/console -e prod stenope:build ./static</code></pre>
 
             <p>
                 This will build the site and put the resulting HTML files and assets in a directory named
@@ -145,7 +146,7 @@
 
             <p>Here’s that template:</p>
 
-<pre><code># static-website.yaml
+<pre><code class="language-yaml"># static-website.yaml
 Resources:
   WebsiteBucket:
     Type: AWS::S3::Bucket
@@ -240,7 +241,7 @@ Resources:
                 that process needs to be repeatable. Tie everything together with a deployment script like this one:
             </p>
 
-            <pre><code>#!/bin/bash -e
+            <pre><code class="language-bash">#!/bin/bash -e
 
 # Deploy the website infrastructure
 aws cloudformation deploy \
@@ -293,7 +294,7 @@ aws s3 sync ./static/ s3://YOUR-BUCKET-NAME --delete</code></pre>
                 <li>Follow the steps here for adding Alias records to your domain’s hosted zone.</li>
             </ol>
 
-            <pre><code> Distribution:
+            <pre><code class="language-diff"> Distribution:
    Properties:
      DistributionConfig:
 +      Aliases: [ YOUR-DOMAIN.com ]
@@ -350,5 +351,7 @@ aws s3 sync ./static/ s3://YOUR-BUCKET-NAME --delete</code></pre>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="../../theme-toggle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 </body>
 </html>

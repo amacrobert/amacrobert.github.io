@@ -106,9 +106,7 @@ body {
     font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
 }
 
-.article-content pre {
-    background-color: #2b2b2b;
-    color: #bababa;
+.article-content pre[class*="language-"] {
     border-radius: 4px;
     padding: 1rem 1.25rem;
     overflow-x: auto;
@@ -116,12 +114,11 @@ body {
     border-left: 3px solid darkred;
 }
 
-.article-content pre code {
+.article-content pre[class*="language-"] code {
     background: none;
     padding: 0;
     font-size: 0.85rem;
     line-height: 1.5;
-    color: inherit;
 }
 
 .article-content blockquote {
@@ -206,8 +203,7 @@ body {
     background-color: rgba(157, 196, 80, 0.15);
 }
 
-[data-theme="dark"] .article-content pre {
-    background-color: #1e1e1e;
+[data-theme="dark"] .article-content pre[class*="language-"] {
     border-left-color: #9dc450;
 }
 
