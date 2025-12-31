@@ -1,0 +1,219 @@
+/* Article-specific styles */
+body {
+    background-color: rgb(225, 225, 225);
+}
+
+.article-container {
+    max-width: 800px;
+    margin: 24px auto;
+    padding: 40px 24px;
+    background-color: rgb(245, 245, 245);
+    box-shadow: rgba(0, 0, 0, 10%) 0 0 30px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 2rem;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: darkred;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.article-header {
+    margin-bottom: 2.5rem;
+}
+
+.article-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+}
+
+.article-subtitle {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    font-weight: 400;
+}
+
+.article-meta {
+    color: #777;
+    font-size: 0.85rem;
+    padding-top: 1rem;
+    border-top: 2px solid darkred;
+    display: inline-block;
+}
+
+.article-meta a {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.article-meta a:hover {
+    color: darkred;
+}
+
+.article-content {
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.article-content p {
+    margin-bottom: 1.25rem;
+}
+
+.article-content h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: darkred;
+    letter-spacing: 0.03em;
+}
+
+.article-content h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.article-content ul,
+.article-content ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.25rem;
+}
+
+.article-content li {
+    margin-bottom: 0.4rem;
+}
+
+.article-content code {
+    background-color: rgba(139, 0, 0, 0.08);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+}
+
+.article-content pre {
+    background-color: #2b2b2b;
+    color: #bababa;
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+    border-left: 3px solid darkred;
+}
+
+.article-content pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: inherit;
+}
+
+.article-content blockquote {
+    border-left: 3px solid darkred;
+    margin: 1.25rem 0;
+    padding: 0.25rem 0 0.25rem 1.25rem;
+    color: #666;
+    font-style: italic;
+}
+
+.article-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 1.5rem 0;
+}
+
+.article-content strong {
+    font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media screen and (min-width: 576px) {
+    .article-container {
+        padding: 48px 40px;
+    }
+
+    .article-title {
+        font-size: 2rem;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .article-container {
+        padding: 60px 56px;
+    }
+
+    .article-title {
+        font-size: 2.25rem;
+    }
+
+    .article-content {
+        font-size: 1.05rem;
+    }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #2b2b2b;
+        color: #bababa;
+    }
+
+    .article-container {
+        background-color: #323232;
+    }
+
+    .back-link {
+        color: #9dc450;
+    }
+
+    .article-title {
+        color: #e0e0e0;
+    }
+
+    .article-subtitle {
+        color: #999;
+    }
+
+    .article-meta {
+        color: #888;
+        border-top-color: #9dc450;
+    }
+
+    .article-meta a:hover {
+        color: #9dc450;
+    }
+
+    .article-content h2 {
+        color: #9dc450;
+    }
+
+    .article-content code {
+        background-color: rgba(157, 196, 80, 0.15);
+    }
+
+    .article-content pre {
+        background-color: #1e1e1e;
+        border-left-color: #9dc450;
+    }
+
+    .article-content blockquote {
+        border-left-color: #9dc450;
+        color: #999;
+    }
+}

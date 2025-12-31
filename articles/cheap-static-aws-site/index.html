@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Build a Cheap Static Website with Symfony and AWS | Andrew MacRobert</title>
+    <meta name="description" content="How I reduced my photography website's annual cost by 90% by rethinking its stack, converting a Symfony app to a static site hosted on S3 and CloudFront.">
+    <meta name="author" content="Andrew MacRobert">
+
+    <meta property="og:title" content="Build a Cheap Static Website with Symfony and AWS">
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="How I reduced my photography website's annual cost by 90% by rethinking its stack, converting a Symfony app to a static site hosted on S3 and CloudFront.">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="../../main.css" rel="stylesheet">
+    <link href="../../dark-mode.css" rel="stylesheet">
+    <link href="../article.css" rel="stylesheet">
+</head>
+<body>
+    <article class="article-container">
+        <a href="../../" class="back-link">&larr; Back to Resume</a>
+
+        <header class="article-header">
+            <h1 class="article-title">Build a Cheap Static Website with Symfony and AWS</h1>
+            <p class="article-subtitle">Host your hobby sites for under $1/month by rethinking your stack.</p>
+            <p class="article-meta">
+                By <a href="../">Andrew MacRobert</a>
+            </p>
+        </header>
+
+        <div class="article-content">
+            <p>
+                Every year, my shared hosting bill made me wonder if it’s worth renewing.
+            </p>
+
+            <p>
+                A few hundred dollars is fair for what most shared hosting companies provide, but it‘s hard to justify
+                when all you’re running is a few hobby sites that don’t change much, don’t have user logins, and don’t
+                make much money.
+            </p>
+
+            <p>
+                For example, my photography website was a Symfony application running on JustHost’s “Plus” plan for
+                $14.99 a month . That price provides space on a shared Linux server running Apache, PHP, and MySQL,
+                which the application needed to serve traffic and let me author its content.
+            </p>
+
+            <p>
+                In reality, sites like that could just as well be a collection of cheaply hosted static HTML files
+                instead of a website run on a LAMP stack costing about $200/year. But I just don’t want to sacrifice
+                using Symfony. The Twig templating engine makes building webpages a pleasure, and bundles like Sonata
+                Admin makes authoring the site’s content a breeze. I don’t want to get stuck writing HTML myself.
+            </p>
+
+            <p></p>Luckily, there are some great solutions. Here’s mine:</p>
+
+            <ol>
+                <li>I used a static site generator to build a static site from my Symfony site,</li>
+                <li>hosted the site on AWS S3 behind a CloudFront distribution, and</li>
+                <li>built a deployment process to automate it all whenever I author or change the content.</li>
+            </ol>
+
+            <p>Here’s the how-to, step by step:</p>
+
+            <h2>Step 1: Use a static site generator to create your static website</h2>
+
+            <p>
+                I used <a href="https://stenopephp.github.io/Stenope/" target="_blank">Stenope</a> to generate the
+                static site from my Symfony site. Stenope crawls your Symfony site and builds a static version of it as
+                it exists at that time.
+            </p>
+
+            <p>
+                You can use any site generator that suits your needs. There’s a good list at jamstack.org/generators.
+            </p>
+
+            <p>If you use Stenope, install it with:</p>
+
+            <pre><code>composer require stenope/stenope</code></pre>
+
+            <p>Then build the static site with:</p>
+
+            <pre><code>bin/console -e prod stenope:build ./static</code></pre>
+
+            <p>
+                This will build the site and put the resulting HTML files and assets in a directory named
+                <code>static</code>.
+            </p>
+
+            <p>
+                Each of your website’s routes will be its own directory holding an index.html file. As long as you can
+                ensure those document indexes are displayed by default, all your existing routes will work as usual
+                (e.g. “/blog/123” should respond with the generated file “/blog/123/index.html”).
+            </p>
+
+            <h2>Step 2: Create your AWS infrastructure</h2>
+
+            <p>
+                Next you’ll need to create a place to host your site. I use AWS for its ease and low cost (well, low
+                cost for this particular purpose).
+            </p>
+
+            <p>Here’s what we want:</p>
+
+            <ol>
+                <li>An s3 bucket that will store the static website code</li>
+                <li>A CloudFront distribution to make serving the site fast anywhere</li>
+                <li>A domain name for the site, pointing to that CloudFront distribution</li>
+            </ol>
+
+            TODO: IMAGE HERE
+
+            <p>
+                For my site, I did #1 and #2 with a CloudFormation template. It’s always worth describing your
+                infrastructure as code in case you need to pick it up and put it in another account, or just reset
+                things to a working earlier version.
+            </p>
+
+            <p>Here’s that template:</p>
+
+<pre><code># static-website.yaml
+Resources:
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: YOUR-BUCKET-NAME
+      AccessControl: Private
+
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Statement:
+          - Action: s3:GetObject
+            Effect: Allow
+            Resource: !Sub 'arn:aws:s3:::${WebsiteBucket}/*'
+            Principal:
+              AWS:
+                - !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${DistributionOAI.Id}"
+
+  DistributionOAI:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: 'OAI for CloudFront access to s3'
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !GetAtt WebsiteBucket.RegionalDomainName
+            Id: 's3-origin'
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${DistributionOAI.Id}"
+        PriceClass: PriceClass_100
+        Enabled: true
+        DefaultCacheBehavior:
+          TargetOriginId: 's3-origin'
+          ViewerProtocolPolicy: 'redirect-to-https'
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt RewriteDefaultIndexRequest.FunctionMetadata.FunctionARN
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: all
+
+  RewriteDefaultIndexRequest:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: RewriteDefaultIndexRequest
+      AutoPublish: true
+      FunctionCode: |
+        function handler(event) {
+          var request = event.request;
+          var uri = request.uri;
+          if (uri.endsWith('/')) {
+            request.uri += 'index.html';
+          }
+          else if (!uri.includes('.')) {
+            request.uri += '/index.html';
+          }
+          return request;
+        }
+      FunctionConfig:
+        Comment: 'Add document indexes to requests'
+        Runtime: cloudfront-js-1.0</code></pre>
+
+            <p>Some notes on that infrastructure:</p>
+
+            <p>
+                <strong>Distribution pricing</strong>: For the CloudFront Distribution, I opted for the “PriceClass_100”
+                PriceClass. That’s the cheapest option for the CDN, which caches your site in North America and Europe.
+            </p>
+
+            <p>
+                <strong>Serving index.html</strong>: Since this site isn’t hosted on a traditional web server, we have
+                to tell it to serve, say, “/about/index.html” when a user goes to “/about” in their browser. That’s done
+                with the code you see in the “RewriteDefaultIndexRequest” CloudFront Function.
+            </p>
+
+            <p>
+                <strong>Bucket privacy</strong>: The site’s s3 bucket is private. Only the CloudFront distribution can
+                read from it, using the “DistributionOAI” origin access identity.
+            </p>
+
+            <h2>Step 3: Build and upload your static website</h2>
+
+            <p>
+                Since this website needs to rebuild and redeploy itself (or parts of itself) every time content changes,
+                that process needs to be repeatable. Tie everything together with a deployment script like this one:
+            </p>
+
+            <pre><code>#!/bin/bash -e
+
+# Deploy the website infrastructure
+aws cloudformation deploy \
+  --template-file static-website.yaml \
+  --stack-name my-website-prod \
+  --region us-east-1 \
+  --no-fail-on-empty-changeset
+
+# Build the static website
+bin/console -e prod cache:clear
+bin/console -e prod stenope:build ./static
+
+# Sync the built site to s3
+aws s3 sync ./static/ s3://YOUR-BUCKET-NAME --delete</code></pre>
+
+            <p>
+                This uses the aws cli to deploy the CloudFormation stack for the infrastructure (which I do every
+                deployment because it doesn’t hurt and I believe services should be responsible for their own resources
+                [well, mostly]), then builds a new version of the static website with Stenope, and finally uploads
+                that build to the s3 bucket using aws s3 sync.
+            </p>
+
+            <p>
+                If you wanted to go a step further, you could then create a new cache invalidation for the CloudFront
+                distribution to invalidate the cached versions of the newly updated s3 objects.
+            </p>
+
+            <p>
+                This script could be run automatically every time you make a content change, or manually whenever you
+                want to push updates.
+            </p>
+
+            <h2>Ta-da!</h2>
+            <p>You now have a fast and secure website, hosted dirt cheap on a platform you don’t have to think about.</p>
+
+            <p>Read on for more considerations.</p>
+
+            <h3>Adding a domain name</h3>
+
+            <p>
+                You may want to use a custom domain name for your site instead of the gobbledygook generated by
+                CloudFront.
+            </p>
+
+            <p>To do that, follow these steps:</p>
+
+            <ol>
+                <li>Register your domain in Route53, create an SSL certificate in ACM, and validate the certificate for the domain</li>
+                <li>Add “Aliases” and “ViewerCertificate” to your distribution’s “DistributionConfig” in the CloudFormation template (see below).</li>
+                <li>Follow the steps here for adding Alias records to your domain’s hosted zone.</li>
+            </ol>
+
+            <pre><code> Distribution:
+   Properties:
+     DistributionConfig:
++      Aliases: [ YOUR-DOMAIN.com ]
++      ViewerCertificate:
++        AcmCertificateArn: ARN-OF-YOUR-ACM-CERT-FOR-YOUR-DOMAIN
++        MinimumProtocolVersion: TLSv1
++        SslSupportMethod: sni-only</code></pre>
+
+            <p>
+                A .com domain through Route 53 will add $12 annually, plus $0.50 per month for the hosted zone totaling
+                $18 per year.
+            </p>
+
+            <h3>Jamstack</h3>
+
+            <p>
+                There’s nothing preventing you from adding JavaScript to your pages that makes API calls out to various
+                services. In fact, that would be the final part of the Jamstack (JavaScript, APIs, Markup) architecture.
+            </p>
+
+            <p>
+                Examples include adding a comments section to your static pages with Disqus, or showing the day’s
+                forecast using the OpenWeather API.
+            </p>
+
+            <p>
+                And of course you can write your own API called by your static site, and serve that API on, say, Lambda
+                via API Gateway. At that point the cost savings benefit falls short, but separating static frontend
+                assets (webpages and related files) from your backend (API) is a worthy endeavor nonetheless.
+            </p>
+
+            <h3>SPAs</h3>
+
+            <p>
+                If you want to adopt this strategy to host single-page applications written in React, Vue, or another JS
+                framework, just update the CloudFormation function from Step 2 (“RewriteDefaultIndexRequest”).
+            </p>
+
+            <p>
+                Your update would make all requests that aren’t for a specific resource (like an image) return your
+                application’s entrypoint HTML file instead. Then you can handle routing in your SPA, knowing that anyone
+                who lands on a different route will still get served the application.
+            </p>
+
+            <hr>
+
+            <p>
+                By rethinking your stack a little bit, you may find you have sites that can be statically built and
+                rebuilt when necessary. That can make them faster, cheaper, and more available — pleasing your users,
+                while taking a burden off your wallet.
+            </p>
+        </div>
+    </article>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Scalable Batch Jobs on Lambda with Parallelized Producers | Andrew MacRobert</title>
+    <meta name="description" content="How separating batch jobs into producers and consumers, then parallelizing both, can increase scalability and reduce processing time on AWS Lambda.">
+    <meta name="author" content="Andrew MacRobert">
+
+    <meta property="og:title" content="Scalable Batch Jobs on Lambda with Parallelized Producers">
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="How separating batch jobs into producers and consumers, then parallelizing both, can increase scalability and reduce processing time on AWS Lambda.">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="../../main.css" rel="stylesheet">
+    <link href="../../dark-mode.css" rel="stylesheet">
+    <link href="../article.css" rel="stylesheet">
+</head>
+<body>
+    <article class="article-container">
+        <a href="../../" class="back-link">&larr; Back to Resume</a>
+
+        <header class="article-header">
+            <h1 class="article-title">Scalable Batch Jobs on Lambda with Parallelized Producers</h1>
+            <p class="article-subtitle">Increase scalability and reduce processing time by separating batch jobs into producers and consumers, then parallelizing both.</p>
+            <p class="article-meta">
+                By <a href="../">Andrew MacRobert</a>
+            </p>
+        </header>
+
+        <div class="article-content">
+            <p>
+                At <a href="http://mequilibrium.com/" target="_blank">meQuilibrium</a>, a SaaS resilience coaching platform, we decided to move our 10+ microservices from EC2
+                instances to AWS Lambda. This has worked out great for us, but came with unique challenges.
+            </p>
+            <p>
+                Many of these microservices include scheduled workloads for batch-processing large amounts of data.
+                That’s easy enough on an always-on server, but Lambda processes have a maximum 15-minute lifetime. If
+                you don’t complete your processing in 15 minutes, your workload times out. This limitation of Lambda
+                turned out to be a blessing because it forced us to implement a scalable and robust solution for our
+                batch jobs.
+            </p>
+
+            <p>The anatomy of batch jobs is generally 2 steps:</p>
+            <ol>
+                <li>Get a set of data to process (often with a database query)</li>
+                <li>Process that data, using each element as the input for some process</li>
+            </ol>
+            <p>Let’s take a look at the solution’s evolution.</p>
+
+            <h2>Initial solution: Process procedurally</h2>
+
+            <p>As an example, imagine a batch process that bills users who are due for a monthly payment.</p>
+
+            <p>Using a long-running batch process, that might look something like this:</p>
+
+
+<pre><code>// Step 1: get the data
+users = getUsersWithPaymentDue()
+
+// Step 2: process the data
+foreach (user in users):
+billUser(user)</code></pre>
+
+            <p>
+                This presents a scalability issue. As your business grows and you accept more paying customers, the time
+                it takes to run increases linearly (<code>O(n)</code>). If it takes 300ms to run billUser(), the most
+                users you can bill in a Lambda’s lifetime are 3,000 — likely less due to overhead.
+            </p>
+
+            <h2>Better solution: Use a queue as a buffer</h2>
+
+            <p>
+                The next logical step is to separate the two steps of a batch job. Step 1 (get the data) and step 2
+                (process the data) can be separated respectively into a producer and consumer. Using an SQS queue as a
+                trigger, Lambda will scale the consumer automatically as needed. That solution looks like this:
+            </p>
+
+            <p>
+                Step 1: The producer gets all the users due for payment, and publishes an SQS message for each user:
+            </p>
+
+<pre><code>// PRODUCER
+users = getUsersWithPaymentDue()
+foreach (user in users):
+    publishToQueue(user)</code></pre>
+
+            <p>
+                Step 2: Independently, the consumer reads from the queue and dedicates a single invocation for each user
+                billed.
+            </p>
+
+<pre><code>// CONSUMER
+user = receiveFromQueue()
+billUser(user)</code></pre>
+
+            <p>
+                This is a step forward: The producer and consumer are now separate, replacing a bottleneck with a
+                component that’s free to scale horizontally as needed.
+            </p>
+
+            <p>
+                However, it still has a similar issue as before. Publishing to an SQS queue can take about 6ms. In our
+                example, it alleviates a lot of the pressure and allows us to go from processing 3,000 to 150,000 users
+                (minus overhead). But if you are processing more than 150,000 users, your producer will still run into
+                Lambda’s 15-minute time limit while populating your queue.
+            </p>
+
+            <h2>Highly scalable: Parallelize the producer</h2>
+
+            <p>
+                To scale much further, you can parallelize both the producer and the consumer. AWS handles scaling the
+                consumers. At meQuilibrium, we scale the producers using a recursive divide-and-conquer algorithm that
+                uses a Lambda function’s invocation as the algorithm’s iteration. Here’s how that looks for the example:
+            </p>
+
+            <p>
+                First, the producer gets the batch job’s data as before. But instead of publishing one SQS message per
+                user, it arranges the data into payloads each with a maximum size of 256KB (SQS’s maximum message size
+                before resorting to S3 to store messages). Then it publishes each of those payloads to SQS:
+            </p>
+
+<pre><code>users = getUsersWithPaymentDue()
+
+while (users.count > 0):
+    payload = []
+    while (sizeInKB(payload) < 256 AND users.count > 0):
+        payload.push(users.pop())
+
+    publishToQueue(payload)</code></pre>
+
+            <p>
+                Then, the consumer will be our recursive function. The base case will be when it receives a payload with
+                a manageable number of users to process, which we know it can do well within the 15-minute Lambda time
+                limit. The recursive case will be when the payload contains a larger amount of users, in which case it
+                will divide the payload into two smaller payloads each containing half of the original payload. Then it
+                publishes just two SQS messages (one for each payload) and exits.
+            </p>
+
+<pre><code>BASE_CASE = 100
+users = receiveFromQueue()
+
+// Base case: Process the users
+if (users.count < BASE_CASE):
+    foreach (user in users):
+        billUser(user)
+
+// Recursive case: Split the payload in 2
+else:
+    payload1 = firstHalf(users)
+    payload2 = secondHalf(users)
+    publishToQueue(payload1)
+    publishToQueue(payload2)</code></pre>
+
+            <p>
+                Theoretically, if the data we’re using as our input are 8-byte user IDs, the maximum number of users we
+                could process with this method is 4.8 billion (minus some due to the producer’s overhead). At that
+                point, we’d be limited by memory, not time. It would also allow us to double the number of users we
+                process while only increasing the execution time by the duration of one base-case Lambda invocation. In
+                actuality it would take longer, since AWS limits Lambda function concurrency and increases that limit
+                minute-by-minute as needed, rather than allocating all available concurrency at once — but for most
+                intents and purposes this algorithm <code>O(log(n))</code>.
+            </p>
+
+            <h2>In practice</h2>
+            <p>Here are a few additional considerations for implementation we’ve encountered at meQuilibrium:</p>
+
+            <h3>Developer experience</h3>
+            <p>To ease development, we wrote an abstract “Parallel SQS Handler” class that can implement this algorithm
+                for any type of data set (not just user IDs) and handle the chunking of batch job data into 256KB
+                payloads. Any developer can extend this class for a new type of batch job and implement a handler for
+                processing, with no need to understand the underlying algorithm.</p>
+
+            <h3>Database loads</h3>
+            <p>
+                This architecture can easily move bottlenecks from your application code to your database (or other
+                resources shared by parallel consumers). It is important to make sure whatever underlying resources are
+                used by your consumers are ready to scale. For databases, utilize connection pooling and read replicas.
+            </p>
+            <p>
+                Additionally, you can protect your resources by setting an upper limit for your consumer’sconcurrency.
+                On Lambda, do this by setting the function’s reserved concurrency.
+            </p>
+
+            <h3>Monitoring progress</h3>
+            <p>
+                One downfall to moving from procedural batch processing to parallel processing is that you lose some
+                visibility — no longer can you tell how far a batch job is simply by looking at, say, a progress bar in
+                its output.
+            </p>
+
+            <p>If this visibility is important to you, solve it like so:</p>
+
+            <ol>
+                <li>When your producer gets its data, write the number of records somewhere (such as a redis cache ordatabase).</li>
+                <li>When your consumer processes a record, increase a counter somewhere.</li>
+                <li>In a UI, show the progress calculated from the above two numbers.</li>
+            </ol>
+
+            <hr>
+
+            <p>
+                At meQuilibrium, we saw producer parallelization reduce batch job processing times from hours to minutes
+                (or less). It allowed us to move our microservices to Lambda without relying on external long-running
+                processes, and simultaneously remove bottlenecks, process jobs faster, and improve scalability.
+            </p>
+        </div>
+    </article>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</body>
+</html>
