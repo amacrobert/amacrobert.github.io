@@ -132,7 +132,24 @@ body {
 .article-content img {
     max-width: 100%;
     height: auto;
+}
+
+.article-content figure {
     margin: 1.5rem 0;
+}
+
+.article-content figure img {
+    display: block;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.article-content figcaption {
+    font-size: 0.85rem;
+    color: #666;
+    text-align: center;
+    margin-top: 0.5rem;
+    font-style: italic;
 }
 
 .article-content strong {
@@ -209,5 +226,13 @@ body {
 
 [data-theme="dark"] .article-content blockquote {
     border-left-color: #9dc450;
+    color: #999;
+}
+
+[data-theme="dark"] .article-content figure img {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .article-content figcaption {
     color: #999;
 }
