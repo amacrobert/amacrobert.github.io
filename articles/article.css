@@ -168,52 +168,50 @@ body {
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
-    body {
-        background-color: #2b2b2b;
-        color: #bababa;
-    }
+[data-theme="dark"] body {
+    background-color: #2b2b2b;
+    color: #bababa;
+}
 
-    .article-container {
-        background-color: #323232;
-    }
+[data-theme="dark"] .article-container {
+    background-color: #323232;
+}
 
-    .back-link {
-        color: #9dc450;
-    }
+[data-theme="dark"] .back-link {
+    color: #9dc450;
+}
 
-    .article-title {
-        color: #e0e0e0;
-    }
+[data-theme="dark"] .article-title {
+    color: #e0e0e0;
+}
 
-    .article-subtitle {
-        color: #999;
-    }
+[data-theme="dark"] .article-subtitle {
+    color: #999;
+}
 
-    .article-meta {
-        color: #888;
-        border-top-color: #9dc450;
-    }
+[data-theme="dark"] .article-meta {
+    color: #888;
+    border-top-color: #9dc450;
+}
 
-    .article-meta a:hover {
-        color: #9dc450;
-    }
+[data-theme="dark"] .article-meta a:hover {
+    color: #9dc450;
+}
 
-    .article-content h2 {
-        color: #9dc450;
-    }
+[data-theme="dark"] .article-content h2 {
+    color: #9dc450;
+}
 
-    .article-content code {
-        background-color: rgba(157, 196, 80, 0.15);
-    }
+[data-theme="dark"] .article-content code {
+    background-color: rgba(157, 196, 80, 0.15);
+}
 
-    .article-content pre {
-        background-color: #1e1e1e;
-        border-left-color: #9dc450;
-    }
+[data-theme="dark"] .article-content pre {
+    background-color: #1e1e1e;
+    border-left-color: #9dc450;
+}
 
-    .article-content blockquote {
-        border-left-color: #9dc450;
-        color: #999;
-    }
+[data-theme="dark"] .article-content blockquote {
+    border-left-color: #9dc450;
+    color: #999;
 }
