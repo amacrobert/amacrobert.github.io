@@ -125,6 +125,26 @@ ul.interests li:last-child::after {
 
 }
 
+/* Back link, shared by articles and the resume */
+.back-link {
+    display: inline-block;
+    margin-bottom: 2rem;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: darkred;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+[data-theme="dark"] .back-link {
+    color: #9dc450;
+}
+
 /* Theme Toggle Button */
 .theme-toggle {
     position: fixed;
