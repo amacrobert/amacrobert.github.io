@@ -1,0 +1,119 @@
+/* Homepage: resume link + article index */
+
+.home-intro {
+    margin-bottom: 1rem;
+}
+
+/* Sidebar stacks above the posts on small screens, sits beside them from md up. */
+.home-sidebar {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@media screen and (min-width: 768px) {
+    .home-sidebar {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        padding-right: 1.75rem;
+        border-bottom: none;
+        border-right: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .home-main {
+        padding-left: 1.75rem;
+    }
+}
+
+.home-resume-link a {
+    color: darkred;
+    text-decoration: none;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+}
+
+.home-resume-link a:hover {
+    text-decoration: underline;
+}
+
+/* Centered section headers suit the resume's full-width columns; beside a
+   sidebar, this one reads better aligned with the list it heads. */
+.home-main .section-header {
+    text-align: left;
+}
+
+.article-list {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+.article-list-item {
+    padding: 1.25rem 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.article-list-item:last-child {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.article-list-date {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #777;
+    margin-bottom: 0.2rem;
+}
+
+.article-list-item h4 {
+    font-size: 1.15rem;
+    margin-bottom: 0.35rem;
+}
+
+.article-list-item h4 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.article-list-item h4 a:hover {
+    color: darkred;
+    text-decoration: underline;
+}
+
+.article-list-item p {
+    margin-bottom: 0;
+    color: #555;
+    line-height: 1.5;
+}
+
+/* Dark mode */
+[data-theme="dark"] .home-sidebar {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .home-resume-link a {
+    color: #9dc450;
+}
+
+[data-theme="dark"] .article-list-item {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .article-list-item:last-child {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .article-list-date {
+    color: #888;
+}
+
+[data-theme="dark"] .article-list-item h4 a:hover {
+    color: #9dc450;
+}
+
+[data-theme="dark"] .article-list-item p {
+    color: #999;
+}

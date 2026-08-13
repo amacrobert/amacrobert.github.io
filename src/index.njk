@@ -1,0 +1,46 @@
+---
+layout: base.njk
+title: Home
+description: Software Engineer based in Boston, MA. Articles on backend architecture, AWS, and developer experience.
+ogTitle: Andrew MacRobert
+ogImage: /resume-image.jpg
+stylesheets:
+  - /home.css
+---
+    <div class="container main-content">
+        <div class="row">
+            <div class="col-12 col-md-8">
+                <h1>Andrew MacRobert</h1>
+            </div>
+            <hr>
+        </div>
+
+        <div class="row">
+            <aside class="col-12 col-md-4 home-sidebar">
+                <p class="home-intro">
+                    Backend engineer with a platform mindset. 10+ years of deep ownership across architecture,
+                    infrastructure, and developer tooling.
+                </p>
+                <p class="home-resume-link">
+                    <a href="/resume/">My Resume &rarr;</a>
+                </p>
+            </aside>
+
+            <div class="col-12 col-md-8 home-main">
+                <h3 class="section-header">Posts</h3>
+                <ul class="article-list">
+                {%- for article in collections.articles %}
+                    <li class="article-list-item">
+                        <p class="article-list-date">
+                            <time datetime="{{ article.date | isoDate }}">{{ article.date | readableDate }}</time>
+                        </p>
+                        <h4><a href="{{ article.url }}">{{ article.data.title }}</a></h4>
+                        {%- if article.data.subtitle %}
+                        <p>{{ article.data.subtitle }}</p>
+                        {%- endif %}
+                    </li>
+                {%- endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>

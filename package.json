@@ -1,0 +1,26 @@
+{
+  "name": "amacrobert.github.io",
+  "version": "1.0.0",
+  "description": "Personal site and articles, built with Eleventy.",
+  "scripts": {
+    "build": "eleventy",
+    "serve": "eleventy --serve",
+    "clean": "rm -rf _site"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amacrobert/amacrobert.github.io.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/amacrobert/amacrobert.github.io/issues"
+  },
+  "homepage": "https://github.com/amacrobert/amacrobert.github.io#readme",
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.6",
+    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2"
+  },
+  "private": true
+}

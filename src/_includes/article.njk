@@ -1,0 +1,25 @@
+---
+layout: base.njk
+ogType: article
+stylesheets:
+  - /articles/article.css
+  - https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css
+---
+    <article class="article-container">
+        <a href="/" class="back-link">&larr; Home</a>
+
+        <header class="article-header">
+            <h1 class="article-title">{{ title }}</h1>
+            {%- if subtitle %}
+            <p class="article-subtitle">{{ subtitle }}</p>
+            {%- endif %}
+            <p class="article-meta">
+                By <a href="/resume/">{{ site.author }}</a> &middot;
+                <time datetime="{{ page.date | isoDate }}">{{ page.date | readableDate }}</time>
+            </p>
+        </header>
+
+        <div class="article-content">
+{{ content | safe }}
+        </div>
+    </article>

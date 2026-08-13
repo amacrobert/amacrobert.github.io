@@ -11,21 +11,6 @@ body {
     box-shadow: rgba(0, 0, 0, 10%) 0 0 30px;
 }
 
-.back-link {
-    display: inline-block;
-    margin-bottom: 2rem;
-    font-size: 0.85rem;
-    text-decoration: none;
-    color: darkred;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 500;
-}
-
-.back-link:hover {
-    text-decoration: underline;
-}
-
 .article-header {
     margin-bottom: 2.5rem;
 }
@@ -189,10 +174,6 @@ body {
 
 [data-theme="dark"] .article-container {
     background-color: #323232;
-}
-
-[data-theme="dark"] .back-link {
-    color: #9dc450;
 }
 
 [data-theme="dark"] .article-title {
